@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # project apps
     'accounts',
+    'tweets', # if you ignore, when you do migration, it will ignore this folder
     'debug_toolbar',
 ]
 
