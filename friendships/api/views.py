@@ -54,6 +54,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
                 "message": "Please check input.",
                 "errors": serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
         return Response({'success': True}, status=status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
