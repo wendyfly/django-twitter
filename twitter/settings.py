@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'tweets', # if you ignore, when you do migration, it will ignore this folder
     'friendships',
     'newsfeeds',
+    "comments",
     'debug_toolbar',
 ]
 
