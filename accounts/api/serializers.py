@@ -13,6 +13,12 @@ class UserSerializerForTweet(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username']
 
+
+# inheritance from UserSerializerForTweet
+class UserSerializerForComments(UserSerializerForTweet):
+    pass
+
+
 class UserSeriallizerForFriendship(UserSerializerForTweet):
     pass
 
@@ -21,11 +27,12 @@ class SignupSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=20, min_length=6)
     password = serializers.CharField(max_length=20, min_length=6)
     email = serializers.EmailField()
-    #指定这个model 长的样子
+
+    # 指定这个model 长的样子
     class Meta:
-        #用的是user 这个表单
+        # 用的是user 这个表单
         model = User
-        #这个user 表单有三个fields
+        # 这个user 表单有三个fields
         fields = ('username', 'email', 'password')
 
     # validate will be trigged when call is_valid method
@@ -45,7 +52,7 @@ class SignupSerializer(serializers.ModelSerializer):
         username = validated_data['username'].lower()
         email = validated_data['email'].lower()
         password = validated_data['password']
-        #user.objects.create_user will store password with hash and normalize the username and email
+        # user.objects.create_user will store password with hash and normalize the username and email
         user = User.objects.create_user(
             username=username,
             email=email,
