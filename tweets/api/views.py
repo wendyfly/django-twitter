@@ -5,15 +5,15 @@ from tweets.models import Tweet
 from newsfeeds.services import NewsFeedService
 from utils.decorators import required_params
 from tweets.api.serializers import (
-    TweetCreateSerializer,
     TweetSerializer,
-    TweetSerializerWithComments,
+    TweetSerializerForCreate,
+    TweetSerializerForDetail,
 )
 
 
 # note: try to avoid to use modelviewset, because we don't want it have delete/update action by default
 class TweetViewSet(viewsets.GenericViewSet, ):
-    serializer_class = TweetCreateSerializer
+    serializer_class = TweetSerializerForCreate
     queryset = Tweet.objects.all()
     
     def get_permissions(self):
@@ -32,20 +32,24 @@ class TweetViewSet(viewsets.GenericViewSet, ):
         tweets = Tweet.objects.filter(user_id=request.query_params['user_id']
                                       ).order_by('-created_at')
         # many = true means it will return a list of dict
-        serializer = TweetSerializer(tweets, many=True)
+        serializer = TweetSerializer(
+            tweets,
+            context={'request': request},
+            many=True
+        )
         return Response({'tweets': serializer.data})
 
     def retrieve(self, request, *args, **kwargs):
         # <HOMEWORK 1> 通过某个 query 参数 with_all_comments 来决定是否需要带上所有 comments
         # <HOMEWORK 2> 通过某个 query 参数 with_preview_comments 来决定是否需要带上前三条 comments
         tweet = self.get_object()
-        return Response(TweetSerializerWithComments(tweet).data)
+        return Response(TweetSerializerForDetail(tweet, context={'request': request}).data)
 
     def create(self, request, *args, **kwargs):
         """
         重载 create 方法，因为需要默认用当前登录用户作为 tweet.user
         """
-        serializer = TweetCreateSerializer(
+        serializer = TweetSerializerForCreate(
             data=request.data,
             context={'request': request},
         )
@@ -57,4 +61,5 @@ class TweetViewSet(viewsets.GenericViewSet, ):
             }, status=400)
         tweet = serializer.save()
         NewsFeedService.fanout_to_followers(tweet)
-        return Response(TweetSerializer(tweet).data, status=201)
+        serializer = TweetSerializer(tweet, context={'request': request})
+        return Response(serializer.data, status=201)

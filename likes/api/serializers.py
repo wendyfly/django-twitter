@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from accounts.api.serializers import UserSerializer
+from accounts.api.serializers import UserSerializerForLike
 from likes.models import Like
 from comments.models import Comment
 from tweets.models import Tweet
@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializerForLike()
 
     class Meta:
         model = Like

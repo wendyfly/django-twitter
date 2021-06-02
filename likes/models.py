@@ -25,6 +25,7 @@ class Like(models.Model):
         unique_together = (('user', 'content_type', 'object_id'),)
         # 这个 index 的作用是可以按时间排序某个被 like 的 content_object 的所有 likes
         index_together = (('content_type', 'object_id', 'created_at'),)
+        ordering = ('created_at',)
 
     def __str__(self):
         return '{} - {} liked {} {}'.format(
