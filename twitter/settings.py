@@ -41,13 +41,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'debug_toolbar',
     'django_filters',
+    'notifications',
+
     # project apps
     'accounts',
     'tweets',  # if you ignore, when you do migration, it will ignore this folder
     'friendships',
     'newsfeeds',
     "comments",
-    "likes"
+    "likes",
+    "inbox",
 ]
 
 REST_FRAMEWORK = {
