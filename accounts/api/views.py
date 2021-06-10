@@ -95,6 +95,10 @@ class AccountViewSet(viewsets.ViewSet):
             }, status=400)
         #save will create the user row or update it
         user = serializer.save()
+
+        # Create UserProfile object
+        user.profile
+
         django_login(request, user)
         return Response({
             'success': True,
