@@ -1,4 +1,4 @@
-from accounts.api.serializers import UserSerializerForComments
+from accounts.api.serializers import UserSerializerForComment
 from comments.models import Comment
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -7,7 +7,7 @@ from likes.services import LikeService
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializerForComments()
+    user = UserSerializerForComment()
     likes_count = serializers.SerializerMethodField()
     has_liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
