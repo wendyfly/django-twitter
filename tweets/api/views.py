@@ -9,11 +9,13 @@ from tweets.api.serializers import (
     TweetSerializerForCreate,
     TweetSerializerForDetail,
 )
+from utils.paginations import EndlessPagination
 
 
 # note: try to avoid to use modelviewset, because we don't want it have delete/update action by default
 class TweetViewSet(viewsets.GenericViewSet, ):
     serializer_class = TweetSerializerForCreate
+    pagination_class = EndlessPagination
     queryset = Tweet.objects.all()
     
     def get_permissions(self):
@@ -31,13 +33,14 @@ class TweetViewSet(viewsets.GenericViewSet, ):
         # 单纯的 user 索引是不够的
         tweets = Tweet.objects.filter(user_id=request.query_params['user_id']
                                       ).order_by('-created_at')
+        tweets = self.paginate_queryset(tweets)
         # many = true means it will return a list of dict
         serializer = TweetSerializer(
             tweets,
             context={'request': request},
             many=True
         )
-        return Response({'tweets': serializer.data})
+        return self.get_paginated_response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         # <HOMEWORK 1> 通过某个 query 参数 with_all_comments 来决定是否需要带上所有 comments
