@@ -8,7 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = UserSerializerForLike()
+    # cached_user will be defined in like model
+    user = UserSerializerForLike(source='cached_user')
 
     class Meta:
         model = Like

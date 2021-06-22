@@ -12,7 +12,7 @@ from tweets.services import TweetService
 # ModelSerializer: when you defined fields in Meta, all the fields don't need initialize
 class TweetSerializer(serializers.ModelSerializer):
     # if we odn't declare user here, user will be an integer, userid
-    user = UserSerializerForTweet()
+    user = UserSerializerForTweet(source='cached_user')
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     has_liked = serializers.SerializerMethodField()
@@ -79,6 +79,7 @@ class TweetSerializerForCreate(serializers.ModelSerializer):
             )
 
         return tweet
+
 
 class TweetSerializerForDetail(TweetSerializer):
     user = UserSerializer()
