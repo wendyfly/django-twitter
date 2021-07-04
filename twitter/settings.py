@@ -173,7 +173,8 @@ MEDIA_ROOT = 'media/'
 
 # https://docs.djangoproject.com/en/3.1/topics/cache/
 # `sudo apt-get install memcached` to install memcached
-# use `pip install python-memcached` to let python to talk to memcached
+# memcached 安装方法: apt-get install memcached
+# 然后安装 python 的 memcached 客户端：use `pip install python-memcached`
 # DO NOT pip install memcache or django-memcached
 # timeout represents like ttl
 CACHES = {
@@ -189,6 +190,15 @@ CACHES = {
         'KEY_PREFIX': 'testing',
     },
 }
+
+# Redis
+# 安装方法: sudo apt-get install redis
+# 然后安装 redis 的 python 客户端： pip install redis
+# reids 数据库没有名字，就是 0， 1，2，3，4 ...
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 0 if TESTING else 1
+REDIS_KEY_EXPIRE_TIME = 7 * 86400  # in seconds
 
 
 try:
