@@ -20,6 +20,10 @@ class Tweet(models.Model):
     );  # if it's foreign key, we have to set_null on_delete
     content = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)  # used to sort the tweet, auto add
+    # 新增的 field 一定要设置 null=True，否则 default = 0 会遍历整个表单去设置
+    # 导致 Migration 过程非常慢，从而把整张表单锁死，从而正常用户无法创建新的 tweets
+    likes_count = models.IntegerField(default=0, null=True)
+    comments_count = models.IntegerField(default=0, null=True)
 
     class Meta:
         index_together = (('user', 'created_at'),)
