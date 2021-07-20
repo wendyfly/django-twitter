@@ -19,6 +19,8 @@ from django.contrib.auth import (
 from accounts.api.serializers import SignupSerializer, LoginSerializer
 from accounts.models import UserProfile
 from utils.permissions import IsObjectOwner
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import ratelimit
 
 
 # modelviewset is native one from django framework
@@ -36,6 +38,7 @@ class AccountViewSet(viewsets.ViewSet):
     serializer_class = SignupSerializer
 
     @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def login(self, request):
         """
         默认的 username 是 admin, password 也是 admin
@@ -72,6 +75,7 @@ class AccountViewSet(viewsets.ViewSet):
         })
 
     @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def logout(self, request):
         """
         登出当前用户
@@ -80,6 +84,7 @@ class AccountViewSet(viewsets.ViewSet):
         return Response({"success": True})
 
     @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def signup(self, request):
         """
         使用 username, email, password 进行注册
@@ -114,6 +119,7 @@ class AccountViewSet(viewsets.ViewSet):
         })
 
     @action(methods=['GET'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='GET', block=True))
     def login_status(self, request):
         data = {
             'has_logged_in': request.user.is_authenticated,
