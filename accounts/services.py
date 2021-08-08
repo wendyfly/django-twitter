@@ -10,30 +10,8 @@ cache = caches['testing'] if settings.TESTING else caches['default']
 class UserService:
 
     @classmethod
-    def get_user_through_cache(cls, user_id):
-        key = USER_PATTERN.format(user_id=user_id)
-
-        # read from cache first
-        user = cache.get(key)
-        # cache hit return
-        if user is not None:
-            return user
-
-        # cache miss, read from db
-        try:
-            user = User.objects.get(id=user_id)
-            cache.set(key, user)
-        except User.DoesNotExist:
-            user = None
-        return user
-
-    @classmethod
-    def invalidate_user(cls, user_id):
-        key = USER_PATTERN.format(user_id=user_id)
-        cache.delete(key)
-
-    @classmethod
     def get_profile_through_cache(cls, user_id):
+        # didn't use the memcachedHelper because it's using userID instead of the UserProfileId
         key = USER_PROFILE_PATTERN.format(user_id=user_id)
 
         # read from cache first
