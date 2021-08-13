@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from tweets.models import Tweet
 from likes.services import LikeService
-
+from utils.redis_helper import RedisHelper
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializerForComment(source='cached_user')
