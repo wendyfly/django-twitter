@@ -2,6 +2,7 @@ from django.conf import settings
 
 import happybase
 
+
 class HBaseClient:
     conn = None
 
