@@ -71,9 +71,8 @@ class HBaseModel:
         # note: row key 其实存的是value
         field_hash = cls.get_field_hash()
         values = []
-        for key, field in field_hash.items():
-            if field.column_family:
-                continue
+        for key in cls.Meta.row_key:
+            field = field_hash.get(key)
             value = data.get(key)
             if value is None:
                 raise BadRowKeyError(f"{key} is missing in row key")
@@ -91,7 +90,9 @@ class HBaseModel:
         "val1:val2:val3" => {'key1': val1, 'key2': val2, 'key3': val3}
         """
         data = {}
+        # just in case the input data is not byte (maybe from testing)
         if isinstance(row_key, bytes):
+            # bytes -> str
             row_key = row_key.decode('utf-8')
 
         # val1:val2 => val1:val2: 方便每次 find(':') 都能找到一个 val
