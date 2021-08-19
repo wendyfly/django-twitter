@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from friendships.api.paginations import FriendshipPagination
 from django.utils.decorators import method_decorator
 from ratelimit.decorators import ratelimit
+from friendships.services import FriendshipService
 
 
 class FriendshipViewSet(viewsets.GenericViewSet):
@@ -47,6 +48,13 @@ class FriendshipViewSet(viewsets.GenericViewSet):
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     @method_decorator(ratelimit(key='user_or_ip', rate='3/s', method='GET', block=True))
     def follow(self, request, pk):
+        # 特殊判断重复 follow 的情况（比如前端猛点好多少次 follow)
+        # 静默处理，不报错，因为这类重复操作因为网络延迟的原因会比较多，没必要当做错误处理
+        if FriendshipService.has_followed(request.user.id, int(pk)):
+            return Response({
+                'success': True,
+                'duplicate': True,
+            }, status=status.HTTP_201_CREATED)
 
         serializer = FriendshipSerializerForCreate(data= {
             'from_user_id': request.user.id,

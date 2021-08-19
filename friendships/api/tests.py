@@ -2,6 +2,7 @@ from friendships.models import Friendship
 from rest_framework.test import APIClient
 from testing.testcases import TestCase
 from friendships.api.paginations import FriendshipPagination
+from friendships.services import FriendshipService
 
 
 FOLLOW_URL = '/api/friendships/{}/follow/'
@@ -13,7 +14,7 @@ FOLLOWINGS_URL = '/api/friendships/{}/followings/'
 class FriendshipApiTests(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(FriendshipApiTests, self).setUp()
         self.linghu = self.create_user('linghu')
         self.linghu_client = APIClient()
         self.linghu_client.force_authenticate(self.linghu)
@@ -25,10 +26,11 @@ class FriendshipApiTests(TestCase):
         # create followings and followers for dongxie
         for i in range(2):
             follower = self.create_user('dongxie_follower{}'.format(i))
-            Friendship.objects.create(from_user=follower, to_user=self.dongxie)
+            # go to the hbase
+            self.create_friendship(from_user=follower, to_user=self.dongxie)
         for i in range(3):
             following = self.create_user('dongxie_following{}'.format(i))
-            Friendship.objects.create(from_user=self.dongxie, to_user=following)
+            self.create_friendship(from_user=self.dongxie, to_user=following)
 
     def test_follow(self):
         url = FOLLOW_URL.format(self.linghu.id)
@@ -47,13 +49,14 @@ class FriendshipApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         # 重复 follow 静默成功
         response = self.dongxie_client.post(url)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data['success'], False)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['success'], True)
         # 反向关注会创建新的数据
-        count = Friendship.objects.count()
+        before_count = FriendshipService.get_following_count(self.linghu.id)
         response = self.linghu_client.post(FOLLOW_URL.format(self.dongxie.id))
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Friendship.objects.count(), count + 1)
+        after_count = FriendshipService.get_following_count(self.linghu.id)
+        self.assertEqual(after_count, before_count + 1)
 
     def test_unfollow(self):
         url = UNFOLLOW_URL.format(self.linghu.id)
