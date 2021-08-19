@@ -52,9 +52,10 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         # 静默处理，不报错，因为这类重复操作因为网络延迟的原因会比较多，没必要当做错误处理
         if FriendshipService.has_followed(request.user.id, int(pk)):
             return Response({
-                'success': True,
-                'duplicate': True,
-            }, status=status.HTTP_201_CREATED)
+                'success': False,
+                'message': 'Please check input',
+                'errors': [{'pk': f'You has followed user with id={pk}'}],
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = FriendshipSerializerForCreate(data= {
             'from_user_id': request.user.id,

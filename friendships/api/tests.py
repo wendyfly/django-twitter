@@ -49,8 +49,8 @@ class FriendshipApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         # 重复 follow 静默成功
         response = self.dongxie_client.post(url)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['success'], True)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['success'], False)
         # 反向关注会创建新的数据
         before_count = FriendshipService.get_following_count(self.linghu.id)
         response = self.linghu_client.post(FOLLOW_URL.format(self.dongxie.id))
