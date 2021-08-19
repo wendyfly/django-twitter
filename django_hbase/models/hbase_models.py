@@ -60,7 +60,7 @@ class HBaseModel:
         return cls(**data)
 
     @classmethod
-    def serialize_row_key(cls, data):
+    def serialize_row_key(cls, data, is_prefix=False):
         """
         serialize dict to bytes (not str)
         {key1: val1} => b"val1"
@@ -74,7 +74,9 @@ class HBaseModel:
             field = field_hash.get(key)
             value = data.get(key)
             if value is None:
-                raise BadRowKeyError(f"{key} is missing in row key")
+                if not is_prefix:
+                    raise BadRowKeyError(f"{key} is missing in row key")
+                break
             value = cls.serialize_field(field, value)
             if ':' in value:
                 raise BadRowKeyError(f"{key} should not contain ':' in value: {value}")
@@ -181,8 +183,8 @@ class HBaseModel:
 
     @classmethod
     def create_table(cls):
-        if not settings.TESTING:
-            raise Exception('You can not create table outside of unit tests')
+        # if not settings.TESTING:
+        #     raise Exception('You can not create table outside of unit tests')
         conn = HBaseClient.get_connection()
         # conn.tables() will return bytes like b'test_tweets', so convert bytes to str
         tables = [table.decode('utf-8') for table in conn.tables()]
@@ -195,3 +197,36 @@ class HBaseModel:
             if field.column_family is not None
         }
         conn.create_table(cls.get_table_name(), column_families)
+
+    # <HOMEWORK> 实现一个 get_or_create 的方法，返回 (instance, created)
+
+    # we want the start, stop, prefix params are passed in tuple format because it's simpler
+    # without it, we need to do prefix={'from_user_id': 1, 'created_at'=ts}
+    # using tuple, we could od prefix={1,ts}
+    @classmethod
+    def serialize_row_key_from_tuple(cls, row_key_tuple):
+        if row_key_tuple is None:
+            return None
+        data = {
+            key: value
+            for key, value in zip(cls.Meta.row_key, row_key_tuple)
+        }
+        return cls.serialize_row_key(data, is_prefix=True)
+
+    @classmethod
+    def filter(cls, start=None, stop=None, prefix=None, limit=None, reverse=False):
+        # serialize tuple to str
+        row_start = cls.serialize_row_key_from_tuple(start)
+        row_stop = cls.serialize_row_key_from_tuple(stop)
+        row_prefix = cls.serialize_row_key_from_tuple(prefix)
+
+        # scan table
+        table = cls.get_table()
+        rows = table.scan(row_start, row_stop, row_prefix, limit=limit, reverse=reverse)
+
+        # deserialize to instance list
+        results = []
+        for row_key, row_data in rows:
+            instance = cls.init_from_row(row_key, row_data)
+            results.append(instance)
+        return results
