@@ -50,7 +50,8 @@ class FriendshipViewSet(viewsets.GenericViewSet):
     def follow(self, request, pk):
         # 特殊判断重复 follow 的情况（比如前端猛点好多少次 follow)
         # 静默处理，不报错，因为这类重复操作因为网络延迟的原因会比较多，没必要当做错误处理
-        if FriendshipService.has_followed(request.user.id, int(pk)):
+        to_follow_user = self.get_object()
+        if FriendshipService.has_followed(request.user.id, to_follow_user.id):
             return Response({
                 'success': False,
                 'message': 'Please check input',
@@ -84,10 +85,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
                 'success': False,
                 'message': 'You cannot unfollow yourself'
             }, status=status.HTTP_400_BAD_REQUEST)
-        deleted, _ =  Friendship.objects.filter(
-            from_user=request.user,
-            to_user=pk,
-        ).delete()
+        deleted = FriendshipService.unfollow(request.user.id, int(pk))
         return Response({'success': True, 'deleted': deleted}, status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request):
